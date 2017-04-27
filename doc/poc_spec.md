@@ -4,6 +4,7 @@ Libre Science Journal
 ## Proof of concept
 
 This specification is a work in progress
+
 Author: R. Díaz de León Plata <leon@elinter.net>
 
 ## Scenarios
