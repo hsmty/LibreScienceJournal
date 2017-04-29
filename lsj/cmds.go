@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"errors"
+	"io/ioutil"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -50,6 +51,20 @@ func keysExists() bool {
 	}
 
 	return false
+}
+
+func getKeys() (ed25519.PublicKey, ed25519.PrivateKey, error) {
+	pubKey, err := ioutil.ReadFile(pubFileName)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	prvKey, err := ioutil.ReadFile(prvFileName)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return pubKey, prvKey, nil
 }
 
 func CreateKey(force bool) error {
@@ -99,6 +114,20 @@ func PublishArticle(files... string) error {
 		}
 	}
 
+	_, prvKey, err := getKeys()
+	if err != nil {
+		return err
+	}
+
+	var m = make(map[string][]byte)
+	for _, f := range files {
+		content, err := ioutil.ReadFile(f)
+		if err != nil {
+			return err
+		}
+
+		m[f] = ed25519.Sign(prvKey, content)
+	}
 
 	return nil
 }
