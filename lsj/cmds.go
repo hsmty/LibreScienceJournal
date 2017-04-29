@@ -1,4 +1,4 @@
-package lsj
+package main
 
 import (
 	"fmt"
@@ -44,7 +44,7 @@ func keysExists() error {
 	return nil
 }
 
-func createKey(force bool) error {
+func CreateKey(force bool) error {
 	if force == false {
 		if err := keysExists(); err != nil {
 			return err

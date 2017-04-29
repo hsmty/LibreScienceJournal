@@ -1,4 +1,4 @@
-package lsj
+package main
 
 import (
 	"flag"
@@ -21,7 +21,7 @@ func main() {
 	if *createKeyFlag == true {
 		force := false
 
-		err := createKey(force)
+		err := CreateKey(force)
 		if err != nil {
 			if os.IsExist(err) {
 				fmt.Print("Keys already exists, do you want to overwrite? (yes/no): ")
@@ -35,7 +35,7 @@ func main() {
 			}
 
 			if force == true {
-				err = createKey(force)
+				err = CreateKey(force)
 			}
 
 			if err != nil {
