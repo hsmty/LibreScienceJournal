@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
 func main() {
 	createKeyFlag := flag.Bool("create-key", false,
 		fmt.Sprintf("Creates priv/pub key and stores on %s/.lsj/", homeDir))
-
 	flag.Parse()
 
 	if err := createConfigDir(); err != nil {
@@ -24,11 +22,8 @@ func main() {
 		err := CreateKey(force)
 		if err != nil {
 			if os.IsExist(err) {
-				fmt.Print("Keys already exists, do you want to overwrite? (yes/no): ")
-				var input string
-				fmt.Scanln(&input)
-
-				if strings.TrimRight(input, "\n") == "yes" {
+				input := AskUserInput("Keys already exists, do you want to overwrite? (yes/no): ")
+				if input == "yes" {
 					force = true
 					err = nil
 				}
