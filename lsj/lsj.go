@@ -16,7 +16,7 @@ func init() {
 	lsjDir = fmt.Sprintf("%s/.lsj", homeDir)
 }
 
-func createKey() error {
+func createConfigDir() error {
 	if _, err := os.Stat(lsjDir); err != nil {
 		if os.IsNotExist(err) {
 			err = os.Mkdir(lsjDir, 0700)
@@ -28,6 +28,10 @@ func createKey() error {
 		}
 	}
 
+	return nil
+}
+
+func createKey() error {
 	pubFile := fmt.Sprintf("%s/lsj.pub", lsjDir)
 	prvFile := fmt.Sprintf("%s/lsj.key", lsjDir)
 
@@ -58,6 +62,10 @@ func main() {
 		fmt.Sprintf("Creates priv/pub key and stores on %s/.lsj/", homeDir))
 
 	flag.Parse()
+
+	if err := createConfigDir(); err != nil {
+		log.Fatal("Couldn't open config dir: %v", err)
+	}
 
 	if *createKeyFlag == true {
 		err := createKey()
