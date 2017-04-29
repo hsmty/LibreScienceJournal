@@ -32,27 +32,32 @@ func createConfigDir() error {
 }
 
 func createKey() error {
-	pubFile := fmt.Sprintf("%s/lsj.pub", lsjDir)
-	prvFile := fmt.Sprintf("%s/lsj.key", lsjDir)
+	pubFileName := fmt.Sprintf("%s/lsj.pub", lsjDir)
+	prvFileName := fmt.Sprintf("%s/lsj.key", lsjDir)
 
 	pub, prv, err := ed25519.GenerateKey(nil)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.OpenFile(pubFile, os.O_WRONLY|os.O_CREATE, 0600)
+	pubFile, err := os.OpenFile(pubFileName, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
-	f.Write(pub)
-	f.Close()
+	defer pubFile.Close()
+	if _, err := pubFile.Write(pub); err != nil {
+		return err
+	}
 
-	f, err = os.OpenFile(prvFile, os.O_WRONLY|os.O_CREATE, 0600)
+	privFile, err := os.OpenFile(prvFileName, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
-	f.Write(prv)
-	f.Close()
+	defer privFile.Close()
+
+	if _, err := privFile.Write(prv); err != nil {
+		return err
+	}
 
 	return nil
 }
