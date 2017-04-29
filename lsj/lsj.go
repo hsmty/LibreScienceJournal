@@ -92,10 +92,10 @@ func main() {
 	}
 
 	if *createKeyFlag == true {
-		err := createKey(false)
-		if err != nil {
-			force := false
+		force := false
 
+		err := createKey(force)
+		if err != nil {
 			if os.IsExist(err) {
 				fmt.Print("Keys already exists, do you want to overwrite? (yes/no): ")
 				var input string
