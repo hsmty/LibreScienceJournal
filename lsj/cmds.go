@@ -3,13 +3,19 @@ package main
 import (
 	"fmt"
 	"os"
+	"errors"
 	"golang.org/x/crypto/ed25519"
 )
 
-var homeDir string
-var lsjDir string
-var pubFileName string
-var prvFileName string
+var (
+	homeDir string
+	lsjDir string
+	pubFileName string
+	prvFileName string
+
+	KeysExist = errors.New("keys already exists")
+	KeysNotExist = errors.New("keys does not exists")
+)
 
 func init() {
 	homeDir = os.Getenv("HOME")
@@ -33,21 +39,23 @@ func createConfigDir() error {
 	return nil
 }
 
-func keysExists() error {
-	if _, err := os.Stat(pubFileName); err == nil {
-		return os.ErrExist
+func keysExists() bool {
+	var err error
+
+	if _, err = os.Stat(pubFileName); err == nil {
+		return true
 	}
-	if _, err := os.Stat(prvFileName); err == nil {
-		return os.ErrExist
+	if _, err = os.Stat(prvFileName); err == nil {
+		return true
 	}
 
-	return nil
+	return false
 }
 
 func CreateKey(force bool) error {
 	if force == false {
-		if err := keysExists(); err != nil {
-			return err
+		if keysExists() == true {
+			return KeysExist
 		}
 	}
 
@@ -74,6 +82,23 @@ func CreateKey(force bool) error {
 	if _, err := privFile.Write(prv); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func PublishArticle(files... string) error {
+	var err error
+
+	if keysExists() == false {
+		return KeysNotExist
+	}
+
+	for _, s := range files {
+		if _, err = os.Stat(s); err != nil {
+			return os.ErrNotExist
+		}
+	}
+
 
 	return nil
 }
