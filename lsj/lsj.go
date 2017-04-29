@@ -3,17 +3,22 @@ package main
 import (
 	"flag"
 	"fmt"
-	"golang.org/x/crypto/ed25519"
 	"log"
 	"os"
+	"strings"
+	"golang.org/x/crypto/ed25519"
 )
 
 var homeDir string
 var lsjDir string
+var pubFileName string
+var prvFileName string
 
 func init() {
 	homeDir = os.Getenv("HOME")
 	lsjDir = fmt.Sprintf("%s/.lsj", homeDir)
+	pubFileName = fmt.Sprintf("%s/lsj.pub", lsjDir)
+	prvFileName = fmt.Sprintf("%s/lsj.key", lsjDir)
 }
 
 func createConfigDir() error {
@@ -31,9 +36,23 @@ func createConfigDir() error {
 	return nil
 }
 
-func createKey() error {
-	pubFileName := fmt.Sprintf("%s/lsj.pub", lsjDir)
-	prvFileName := fmt.Sprintf("%s/lsj.key", lsjDir)
+func keysExists() error {
+	if _, err := os.Stat(pubFileName); err == nil {
+		return os.ErrExist
+	}
+	if _, err := os.Stat(prvFileName); err == nil {
+		return os.ErrExist
+	}
+
+	return nil
+}
+
+func createKey(force bool) error {
+	if force == false {
+		if err := keysExists(); err != nil {
+			return err
+		}
+	}
 
 	pub, prv, err := ed25519.GenerateKey(nil)
 	if err != nil {
@@ -73,9 +92,28 @@ func main() {
 	}
 
 	if *createKeyFlag == true {
-		err := createKey()
+		err := createKey(false)
 		if err != nil {
-			log.Fatal(err)
+			force := false
+
+			if os.IsExist(err) {
+				fmt.Print("Keys already exists, do you want to overwrite? (yes/no): ")
+				var input string
+				fmt.Scanln(&input)
+
+				if strings.TrimRight(input, "\n") == "yes" {
+					force = true
+					err = nil
+				}
+			}
+
+			if force == true {
+				err = createKey(force)
+			}
+
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
