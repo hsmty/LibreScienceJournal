@@ -1,6 +1,6 @@
 # binaries
-lsj/lsj
-lsjd/lsjd
+cmd/lsj/lsj
+cmd/lsjd/lsjd
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
