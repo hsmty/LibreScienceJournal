@@ -17,8 +17,8 @@ var (
 	pubFileName string
 	prvFileName string
 
-	ErrKeysExists = errors.New("The key pair already exists")
-	ErrNoKeys     = errors.New("The key pair does not exists")
+	ErrKeysExist = errors.New("The key pair already exists")
+	ErrNoKeys    = errors.New("The key pair does not exists")
 )
 
 func init() {
@@ -73,7 +73,7 @@ func getKeys() (ed25519.PublicKey, ed25519.PrivateKey, error) {
 func CreateKey(force bool) error {
 	if force == false {
 		if keysExists() == true {
-			return ErrKeysExists
+			return ErrKeysExist
 		}
 	}
 

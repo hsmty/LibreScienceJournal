@@ -34,7 +34,7 @@ func main() {
 	case "create-keys":
 		err := CreateKey(false)
 		// ToDo: Move this logit into CreateKeys?
-		if err == ErrKeysExists {
+		if err == ErrKeysExist {
 			input := AskUserInput("Keys already exists, do you want to overwrite? [yes/No] ")
 			if input == "yes" || input == "y" {
 				err := CreateKey(true)
