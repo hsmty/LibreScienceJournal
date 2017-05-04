@@ -37,6 +37,13 @@ Return the article identified by its uuid string, if available
 
 Create a new article, assign it a uuid and return that uuid.
 
+# POST /articles/<uuid:string>/attachments
+
++ Request:
+	+Body: Attachment
+
+Add an attachment to a certain article, for example csv data files.
+
 # PUT /articles/<uuid:string>
 
 Update the article
