@@ -1,24 +1,24 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"errors"
 	"bytes"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"golang.org/x/crypto/ed25519"
 	"io/ioutil"
 	"net/http"
-	"encoding/base64"
-	"golang.org/x/crypto/ed25519"
+	"os"
 )
 
 var (
-	homeDir string
-	lsjDir string
+	homeDir     string
+	lsjDir      string
 	pubFileName string
 	prvFileName string
 
-	KeysExist = errors.New("keys already exists")
-	KeysNotExist = errors.New("keys does not exists")
+	ErrKeysExists = errors.New("The key pair already exists")
+	ErrNoKeys     = errors.New("The key pair does not exists")
 )
 
 func init() {
@@ -73,7 +73,7 @@ func getKeys() (ed25519.PublicKey, ed25519.PrivateKey, error) {
 func CreateKey(force bool) error {
 	if force == false {
 		if keysExists() == true {
-			return KeysExist
+			return ErrKeysExists
 		}
 	}
 
@@ -108,7 +108,7 @@ func PublishArticle(server string, article string, atts []string) error {
 	var err error
 
 	if keysExists() == false {
-		return KeysNotExist
+		return ErrNoKeys
 	}
 	pubKey, prvKey, err := getKeys()
 	if err != nil {

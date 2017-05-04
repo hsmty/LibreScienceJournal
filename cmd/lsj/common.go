@@ -6,8 +6,8 @@ import (
 )
 
 func AskUserInput(msg string) string {
-	fmt.Print(msg)
 	var input string
+	fmt.Print(msg)
 	fmt.Scanln(&input)
 	return strings.TrimRight(input, "\n")
 }
