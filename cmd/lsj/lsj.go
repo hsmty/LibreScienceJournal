@@ -1,58 +1,55 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
-	"strings"
+	"os"
 )
 
-const defaultServer string = "127.0.0.1:8080"
+var (
+	Version = "Proof of Concept"
+)
+
+func usage() {
+	fmt.Println("Usage: lsj <command> <options>")
+	fmt.Println("Publish and gets scientific articles")
+	fmt.Println("Available commands:")
+	fmt.Println("  create-keys - Create a new key for signing")
+	fmt.Println("  publish <document> - Publish the document to the net")
+	fmt.Println("  search <term1> [<term2> ...] [tag:<tag>] - Search for documents")
+	fmt.Println("  fetch <uuid>")
+	fmt.Println("Version: ", Version)
+}
+
+func createKeys(dir string) {
+}
 
 func main() {
-	var err error
-
-	serverFlag := flag.String("server", defaultServer, fmt.Sprintf(
-		"Server to publish"))
-	createKeyFlag := flag.Bool("create-key", false,
-		fmt.Sprintf("Creates priv/pub key and stores on %s/.lsj/", homeDir))
-	publishFlag := flag.String("publish", "", fmt.Sprintf("Publish article"))
-	flag.Parse()
-
-	if err = createConfigDir(); err != nil {
-		log.Fatal("Couldn't open config dir: %v", err)
+	if len(os.Args) < 2 {
+		usage()
+		os.Exit(1)
 	}
 
-	if *createKeyFlag == true {
-		force := false
-
-		err = CreateKey(force)
-		if err != nil {
-			if err == KeysExist {
-				input := AskUserInput("Keys already exists, do you want to overwrite? (yes/no): ")
-				if input == "yes" {
-					force = true
-					err = nil
+	switch command := os.Args[1]; command {
+	case "create-keys":
+		err := CreateKey(false)
+		// ToDo: Move this logit into CreateKeys?
+		if err == ErrKeysExists {
+			input := AskUserInput("Keys already exists, do you want to overwrite? [yes/No] ")
+			if input == "yes" || input == "y" {
+				err := CreateKey(true)
+				if err != nil {
+					log.Fatal("An error ocurred while creating the keys: ", err)
 				}
 			}
-
-			if force == true {
-				err = CreateKey(force)
-			}
-
-
 		}
-	} else if *publishFlag != "" {
-		input := AskUserInput("You are goning to sign and send article, are you sure? (yes/no): ")
-		if input == "yes" {
-			files := strings.Fields(*publishFlag)
-			article := files[0]
-			atts :=files[1:]
-			err = PublishArticle(*serverFlag, article, atts)
-		}
-	}
-
-	if err != nil {
-		log.Fatal(err)
+	case "publish":
+		fmt.Println("publishing...")
+	case "search":
+		fmt.Println("searching...")
+	case "fetch":
+		fmt.Println("fetching")
+	default:
+		usage()
 	}
 }

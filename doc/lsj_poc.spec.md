@@ -21,7 +21,7 @@ statistics used to make those arguments.
 
 Every contributor must first create his public key:
 
-	$ lsj --create-key
+	$ lsj create-key
 	passphrase:
 
 The software should require a reasonable passphrase to secure the stored
@@ -39,7 +39,7 @@ A user wanting to review articles should be able to use the software to search
 for the latest published ones in the network, filtering by subject or other
 criteria.
 
-	$ lsj search subj:Math
+	$ lsj search tag:math.discrete
 	<id> - <title>
 	<id> - <title>
 	<id> - <title>
