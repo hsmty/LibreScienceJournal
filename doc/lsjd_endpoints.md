@@ -5,15 +5,15 @@
 ### Review (object)
 
 + uuid: (string, required)
-+ author: (string, required)
-+ signature: (string, required)
++ authorkey: (string base64, required)
++ signature: (string base64, required)
 + body: (string, required)
 
 ### Article (object)
 
 + uuid: (string, required)
-+ author: (string, required)
-+ signature: (string, required)
++ authorkey: (string base64, required)
++ signature: (string base64, required)
 + version: (int, required)
 + tags: (array[string])
 + body: (string, required)
