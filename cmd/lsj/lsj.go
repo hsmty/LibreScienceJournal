@@ -4,11 +4,16 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 )
+
+const defaultServer string = "127.0.0.1:8080"
 
 func main() {
 	var err error
 
+	serverFlag := flag.String("server", defaultServer, fmt.Sprintf(
+		"Server to publish"))
 	createKeyFlag := flag.Bool("create-key", false,
 		fmt.Sprintf("Creates priv/pub key and stores on %s/.lsj/", homeDir))
 	publishFlag := flag.String("publish", "", fmt.Sprintf("Publish article"))
@@ -40,7 +45,10 @@ func main() {
 	} else if *publishFlag != "" {
 		input := AskUserInput("You are goning to sign and send article, are you sure? (yes/no): ")
 		if input == "yes" {
-			err = PublishArticle(*publishFlag)
+			files := strings.Fields(*publishFlag)
+			article := files[0]
+			atts :=files[1:]
+			err = PublishArticle(*serverFlag, article, atts)
 		}
 	}
 

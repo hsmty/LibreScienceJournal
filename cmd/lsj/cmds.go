@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 	"errors"
+	"bytes"
 	"io/ioutil"
+	"net/http"
+	"encoding/base64"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -101,32 +104,85 @@ func CreateKey(force bool) error {
 	return nil
 }
 
-func PublishArticle(files... string) error {
+func PublishArticle(server string, article string, atts []string) error {
 	var err error
 
 	if keysExists() == false {
 		return KeysNotExist
 	}
+	pubKey, prvKey, err := getKeys()
+	if err != nil {
+		return err
+	}
 
-	for _, s := range files {
+	if _, err = os.Stat(article); err != nil {
+		return os.ErrNotExist
+	}
+	for _, s := range atts {
 		if _, err = os.Stat(s); err != nil {
 			return os.ErrNotExist
 		}
 	}
 
-	_, prvKey, err := getKeys()
+	articleContent, err := ioutil.ReadFile(article)
 	if err != nil {
 		return err
 	}
+	articleSing := ed25519.Sign(prvKey, articleContent)
 
-	var m = make(map[string][]byte)
-	for _, f := range files {
-		content, err := ioutil.ReadFile(f)
+	var attsSing = make(map[string][][]byte)
+	for _, f := range atts {
+		att, err := ioutil.ReadFile(f)
 		if err != nil {
 			return err
 		}
 
-		m[f] = ed25519.Sign(prvKey, content)
+		attsSing[f] = append(attsSing[f], att)
+		attsSing[f] = append(attsSing[f], ed25519.Sign(prvKey, att))
+	}
+
+	var serverUrl string
+	if server[0:6] == "http://" {
+		serverUrl = fmt.Sprintf("%s/articles", server)
+	} else {
+		serverUrl = fmt.Sprintf("http://%s/articles", server)
+	}
+
+	req, err := http.NewRequest("POST", serverUrl, bytes.NewReader(articleContent))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "text/html")
+	req.Header.Set("AuthorKey", base64.StdEncoding.EncodeToString(pubKey))
+	req.Header.Set("Signature", base64.StdEncoding.EncodeToString(articleSing))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	uuid, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	serverUrl = fmt.Sprintf("%s/%s/attachments", serverUrl, string(uuid))
+	for _, v := range attsSing {
+		req, err := http.NewRequest("POST", serverUrl, bytes.NewReader(v[0]))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "text/html")
+		req.Header.Set("AuthorKey", base64.StdEncoding.EncodeToString(pubKey))
+		req.Header.Set("Signature", base64.StdEncoding.EncodeToString(v[1]))
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		resp.Body.Close()
 	}
 
 	return nil
