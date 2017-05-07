@@ -23,7 +23,11 @@ func usage() {
 	fmt.Println("Version: ", Version)
 }
 
-func createKeys(dir string) {
+func init() {
+	err := common.CreateConfigDir()
+	if err != nil {
+		log.Fatal("Can't create config directory", err)
+	}
 }
 
 func main() {
