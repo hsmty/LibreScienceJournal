@@ -9,11 +9,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"github.com/hsmty/LibreScienceJournal/common"
 )
 
 var (
-	homeDir     string
-	lsjDir      string
 	pubFileName string
 	prvFileName string
 
@@ -22,25 +21,8 @@ var (
 )
 
 func init() {
-	homeDir = os.Getenv("HOME")
-	lsjDir = fmt.Sprintf("%s/.lsj", homeDir)
-	pubFileName = fmt.Sprintf("%s/lsj.pub", lsjDir)
-	prvFileName = fmt.Sprintf("%s/lsj.key", lsjDir)
-}
-
-func createConfigDir() error {
-	if _, err := os.Stat(lsjDir); err != nil {
-		if os.IsNotExist(err) {
-			err = os.Mkdir(lsjDir, 0700)
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-
-	return nil
+	pubFileName = fmt.Sprintf("%s/lsj.pub", common.LsjDir)
+	prvFileName = fmt.Sprintf("%s/lsj.key", common.LsjDir)
 }
 
 func keysExists() bool {
