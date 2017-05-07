@@ -60,9 +60,12 @@ func main() {
 			atts = os.Args[3:]
 		}
 
-		err := PublishArticle(common.Config.Server, article, atts)
-		if err != nil {
-			log.Fatal("An error ocurred while publishing the article: ", err)
+		input := common.AskUserInput("You are going to send/sign the document are you sure? [yes/No] ")
+		if input == "yes" || input == "y" {
+			err := PublishArticle(common.Config.Server, article, atts)
+			if err != nil {
+				log.Fatal("An error ocurred while publishing the article: ", err)
+			}
 		}
 	case "search":
 		fmt.Println("searching...")
