@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"github.com/hsmty/LibreScienceJournal/common"
 )
 
 var (
@@ -35,7 +36,7 @@ func main() {
 		err := CreateKey(false)
 		// ToDo: Move this logit into CreateKeys?
 		if err == ErrKeysExist {
-			input := AskUserInput("Keys already exists, do you want to overwrite? [yes/No] ")
+			input := common.AskUserInput("Keys already exists, do you want to overwrite? [yes/No] ")
 			if input == "yes" || input == "y" {
 				err := CreateKey(true)
 				if err != nil {
