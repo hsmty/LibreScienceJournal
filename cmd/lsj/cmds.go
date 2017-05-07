@@ -2,97 +2,32 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
-	"errors"
 	"fmt"
-	"golang.org/x/crypto/ed25519"
-	"io/ioutil"
-	"net/http"
 	"os"
-	"github.com/hsmty/LibreScienceJournal/common"
+	"io/ioutil"
+	"encoding/base64"
+	"net/http"
+	"github.com/hsmty/LibreScienceJournal/crypto"
 )
 
-var (
-	pubFileName string
-	prvFileName string
-
-	ErrKeysExist = errors.New("The key pair already exists")
-	ErrNoKeys    = errors.New("The key pair does not exists")
-)
-
-func init() {
-	pubFileName = fmt.Sprintf("%s/lsj.pub", common.LsjDir)
-	prvFileName = fmt.Sprintf("%s/lsj.key", common.LsjDir)
-}
-
-func keysExists() bool {
-	var err error
-
-	if _, err = os.Stat(pubFileName); err == nil {
-		return true
-	}
-	if _, err = os.Stat(prvFileName); err == nil {
-		return true
-	}
-
-	return false
-}
-
-func getKeys() (ed25519.PublicKey, ed25519.PrivateKey, error) {
-	pubKey, err := ioutil.ReadFile(pubFileName)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	prvKey, err := ioutil.ReadFile(prvFileName)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return pubKey, prvKey, nil
-}
-
-func CreateKey(force bool) error {
+func CreateKeys(force bool) error {
 	if force == false {
-		if keysExists() == true {
-			return ErrKeysExist
+		if crypto.KeysExists() == true {
+			return crypto.ErrKeysExist
 		}
 	}
 
-	pub, prv, err := ed25519.GenerateKey(nil)
-	if err != nil {
-		return err
-	}
-
-	pubFile, err := os.OpenFile(pubFileName, os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		return err
-	}
-	defer pubFile.Close()
-	if _, err := pubFile.Write(pub); err != nil {
-		return err
-	}
-
-	privFile, err := os.OpenFile(prvFileName, os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		return err
-	}
-	defer privFile.Close()
-
-	if _, err := privFile.Write(prv); err != nil {
-		return err
-	}
-
-	return nil
+	return crypto.CreateKeys()
 }
 
 func PublishArticle(server string, article string, atts []string) error {
 	var err error
 
-	if keysExists() == false {
-		return ErrNoKeys
+	if crypto.KeysExists() == false {
+		return crypto.ErrNoKeys
 	}
-	pubKey, prvKey, err := getKeys()
+
+	pubKey, err := crypto.GetPubKey()
 	if err != nil {
 		return err
 	}
@@ -110,7 +45,10 @@ func PublishArticle(server string, article string, atts []string) error {
 	if err != nil {
 		return err
 	}
-	articleSing := ed25519.Sign(prvKey, articleContent)
+	articleSing, err := crypto.SignContent(articleContent)
+	if err != nil {
+		return err
+	}
 
 	var attsSing = make(map[string][][]byte)
 	for _, f := range atts {
@@ -120,7 +58,11 @@ func PublishArticle(server string, article string, atts []string) error {
 		}
 
 		attsSing[f] = append(attsSing[f], att)
-		attsSing[f] = append(attsSing[f], ed25519.Sign(prvKey, att))
+		attSign, err := crypto.SignContent(att)
+		if err != nil {
+			return err
+		}
+		attsSing[f] = append(attsSing[f], attSign)
 	}
 
 	var serverUrl string

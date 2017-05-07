@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"github.com/hsmty/LibreScienceJournal/common"
+	"github.com/hsmty/LibreScienceJournal/crypto"
 )
 
 var (
@@ -33,12 +34,11 @@ func main() {
 
 	switch command := os.Args[1]; command {
 	case "create-keys":
-		err := CreateKey(false)
-		// ToDo: Move this logit into CreateKeys?
-		if err == ErrKeysExist {
+		err := CreateKeys(false)
+		if err == crypto.ErrKeysExist {
 			input := common.AskUserInput("Keys already exists, do you want to overwrite? [yes/No] ")
 			if input == "yes" || input == "y" {
-				err := CreateKey(true)
+				err := CreateKeys(true)
 				if err != nil {
 					log.Fatal("An error ocurred while creating the keys: ", err)
 				}
