@@ -41,28 +41,13 @@ func PublishArticle(server string, article string, atts []string) error {
 		}
 	}
 
-	articleContent, err := ioutil.ReadFile(article)
+	articleContent, articleSing, err := crypto.SignFile(article)
 	if err != nil {
 		return err
 	}
-	articleSing, err := crypto.SignContent(articleContent)
+	attsSings, err := crypto.SignFiles(atts)
 	if err != nil {
 		return err
-	}
-
-	var attsSing = make(map[string][][]byte)
-	for _, f := range atts {
-		att, err := ioutil.ReadFile(f)
-		if err != nil {
-			return err
-		}
-
-		attsSing[f] = append(attsSing[f], att)
-		attSign, err := crypto.SignContent(att)
-		if err != nil {
-			return err
-		}
-		attsSing[f] = append(attsSing[f], attSign)
 	}
 
 	var serverUrl string
@@ -92,7 +77,7 @@ func PublishArticle(server string, article string, atts []string) error {
 		return err
 	}
 	serverUrl = fmt.Sprintf("%s/%s/attachments", serverUrl, string(uuid))
-	for _, v := range attsSing {
+	for _, v := range attsSings {
 		req, err := http.NewRequest("POST", serverUrl, bytes.NewReader(v[0]))
 		if err != nil {
 			return err

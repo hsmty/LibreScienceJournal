@@ -111,3 +111,32 @@ func SignContent(content []byte) ([]byte, error) {
 
 	return ed25519.Sign(prvKey, content), nil
 }
+
+func SignFile(file string) ([]byte, []byte, error) {
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, nil, err
+	}
+	contentSing, err := SignContent(content)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return content, contentSing, nil
+}
+
+func SignFiles(files []string) (map[string][][]byte, error) {
+	var fileSings = make(map[string][][]byte)
+
+	for _, f := range files {
+		content, contentSing, err := SignFile(f)
+		if err != nil {
+			return nil, err
+		}
+
+		fileSings[f] = append(fileSings[f], content)
+		fileSings[f] = append(fileSings[f], contentSing)
+	}
+
+	return fileSings, nil
+}
